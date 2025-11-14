@@ -1,0 +1,18 @@
+{
+  "translation": {
+    "deepl_api_key": "",
+    "microsoft_api_key": "",
+    "microsoft_region": "northeurope",
+    "retry": {
+      "max_attempts": 3,
+      "wait_multiplier": 2,
+      "paragraph_delay": 0.3,
+      "batch_delay": 0.5
+    }
+  },
+  "paths": {
+    "input_folder": "input",
+    "output_folder": "output"
+  }
+}
+
