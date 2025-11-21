@@ -49,6 +49,18 @@ Vous pouvez personnaliser ces chemins dans `config.json`. Le script affichera :
 4. Notez votre région (ex: northeurope, westeurope, eastus)
 5. Limite gratuite : 2 000 000 caractères/mois
 
+### OpenAI (GPT)
+1. Créez un compte sur https://platform.openai.com/
+2. Ajoutez un moyen de paiement
+3. Générez une clé API dans Settings > API Keys
+4. Coût : ~0.002$/1000 tokens (GPT-3.5) ou ~0.03$/1000 tokens (GPT-4)
+
+### Ollama (Local, gratuit)
+1. Installez Ollama : https://ollama.com/download
+2. Lancez : `ollama serve`
+3. Téléchargez un modèle : `ollama pull llama3`
+4. 100% gratuit, fonctionne hors ligne
+
 ## ⚙️ Configuration des paramètres de retry
 
 ### `max_attempts` (défaut: 3)

@@ -120,11 +120,22 @@ Le fichier `config.json` permet de configurer :
 
 ```
 ebook-extractor/
-├── script.py              # Script principal
+├── main.py                # Script principal (modulaire)
+├── script.py              # Script original (monolithique)
+├── src/                   # Modules de l'application
+│   ├── __init__.py
+│   ├── config_manager.py
+│   ├── user_interface.py
+│   ├── epub_extractor.py
+│   ├── web_downloader.py
+│   ├── translator.py
+│   ├── chapter_translator.py
+│   └── book_generator.py
 ├── config.json            # Configuration (vos clés API)
 ├── config.json.example    # Modèle de configuration
 ├── README.md              # Ce fichier
 ├── README_CONFIG.md       # Documentation de la configuration
+├── ARCHITECTURE.md        # Documentation technique
 ├── test_translation.py    # Script de test des traductions
 ├── input/                 # Dossier des fichiers EPUB source (créé auto)
 │   └── votre-livre.epub
