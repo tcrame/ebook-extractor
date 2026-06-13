@@ -12,7 +12,8 @@ def load_config():
     Returns:
         dict: Configuration avec les clés API, ou dict vide si fichier absent
     """
-    config_path = os.path.join(os.path.dirname(__file__), 'config.json')
+    # Remonter au dossier parent (racine du projet) depuis le dossier src
+    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.json')
 
     if os.path.exists(config_path):
         try:

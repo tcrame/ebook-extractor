@@ -18,6 +18,20 @@ try:
 except ImportError:
     REQUESTS_AVAILABLE = False
 
+try:
+    from tqdm import tqdm
+    TQDM_AVAILABLE = True
+except ImportError:
+    TQDM_AVAILABLE = False
+
+
+def _safe_print(message):
+    """Affiche un message de manière compatible avec tqdm"""
+    if TQDM_AVAILABLE:
+        tqdm.write(message)
+    else:
+        print(message)
+
 
 def _translate_with_openai(text, api_key, model='gpt-3.5-turbo'):
     """Traduit avec OpenAI GPT"""
@@ -104,7 +118,7 @@ def translate_text(text, max_length=4500, service='google', api_key=None, region
             except Exception as e:
                 if attempt < max_retries - 1:
                     wait_time = (attempt + 1) * wait_multiplier
-                    print(f"  ⚠️  Tentative {attempt + 1}/{max_retries} échouée, nouvelle tentative dans {wait_time}s...")
+                    _safe_print(f"  ⚠️  Tentative {attempt + 1}/{max_retries} échouée, nouvelle tentative dans {wait_time}s...")
                     time.sleep(wait_time)
                 else:
                     raise e
@@ -114,17 +128,17 @@ def translate_text(text, max_length=4500, service='google', api_key=None, region
         """Crée un traducteur selon le service"""
         if svc == 'deepl':
             if not key:
-                print("  ⚠️  Clé API DeepL requise, utilisation de Google Translate")
+                _safe_print("  ⚠️  Clé API DeepL requise, utilisation de Google Translate")
                 return GoogleTranslator(source='en', target='fr'), 'google'
             return DeeplTranslator(api_key=key, source='en', target='fr'), 'deepl'
         elif svc == 'microsoft':
             if not key:
-                print("  ⚠️  Clé API Microsoft requise, utilisation de Google Translate")
+                _safe_print("  ⚠️  Clé API Microsoft requise, utilisation de Google Translate")
                 return GoogleTranslator(source='en', target='fr'), 'google'
             return MicrosoftTranslator(api_key=key, source='en', target='fr', region=reg), 'microsoft'
         elif svc == 'openai':
             if not key:
-                print("  ⚠️  Clé API OpenAI requise, utilisation de Google Translate")
+                _safe_print("  ⚠️  Clé API OpenAI requise, utilisation de Google Translate")
                 return GoogleTranslator(source='en', target='fr'), 'google'
             # Pour OpenAI, on retourne un objet custom
             class OpenAITranslator:
@@ -170,12 +184,12 @@ def translate_text(text, max_length=4500, service='google', api_key=None, region
     except Exception as e:
         # Fallback vers Google Translate si le service principal échoue
         if actual_service != 'google':
-            print(f"  ⚠️  Erreur {actual_service}: {str(e)[:100]}")
-            print("  🔄 Basculement vers Google Translate...")
+            _safe_print(f"  ⚠️  Erreur {actual_service}: {str(e)[:100]}")
+            _safe_print("  🔄 Basculement vers Google Translate...")
             return _fallback_to_google(text, max_length, batch_delay, try_translate)
         else:
-            print(f"  ❌ Google Translate a échoué après 3 tentatives: {str(e)[:100]}")
-            print("  → Texte original conservé")
+            _safe_print(f"  ❌ Google Translate a échoué après 3 tentatives: {str(e)[:100]}")
+            _safe_print("  → Texte original conservé")
             return text
 
 
@@ -215,7 +229,7 @@ def _fallback_to_google(text, max_length, batch_delay, try_translate):
             return try_translate(google_translator, text)
 
     except Exception as google_error:
-        print(f"  ❌ Google Translate a également échoué après 3 tentatives: {str(google_error)[:100]}")
-        print("  → Texte original conservé")
+        _safe_print(f"  ❌ Google Translate a également échoué après 3 tentatives: {str(google_error)[:100]}")
+        _safe_print("  → Texte original conservé")
         return text
 

@@ -108,10 +108,12 @@ def choose_translation_service(deepl_key, microsoft_key, microsoft_region, opena
 
 def _configure_deepl(deepl_key):
     """Configure le service DeepL"""
-    if deepl_key:
+    # Vérifier si la clé existe et n'est pas vide
+    if deepl_key and deepl_key.strip():
         print("  → Utilisation de la clé DeepL depuis config.json")
         return True, 'deepl', deepl_key, None
     else:
+        print("  ⚠️  Aucune clé DeepL trouvée dans config.json")
         api_key = input("Clé API DeepL (ou Entrée pour Google): ").strip()
         if api_key:
             return True, 'deepl', api_key, None
@@ -122,28 +124,36 @@ def _configure_deepl(deepl_key):
 
 def _configure_microsoft(microsoft_key, microsoft_region):
     """Configure le service Microsoft"""
-    if microsoft_key:
+    # Vérifier si la clé existe et n'est pas vide
+    if microsoft_key and microsoft_key.strip():
         print(f"  → Utilisation de la clé Microsoft depuis config.json (région: {microsoft_region})")
         return True, 'microsoft', microsoft_key, microsoft_region
     else:
-        api_key = input("Clé API Microsoft (ou Entrée pour Google): ").strip() or None
+        print("  ⚠️  Aucune clé Microsoft trouvée dans config.json")
+        api_key = input("Clé API Microsoft (ou Entrée pour Google): ").strip()
         if api_key:
             region = input("Région Azure (ex: northeurope) [northeurope]: ").strip() or "northeurope"
             return True, 'microsoft', api_key, region
-        return True, 'google', None, None
+        else:
+            print("  → Aucune clé fournie, utilisation de Google Translate")
+            return True, 'google', None, None
 
 
 def _configure_openai(openai_key, openai_model):
     """Configure le service OpenAI"""
-    if openai_key:
+    # Vérifier si la clé existe et n'est pas vide
+    if openai_key and openai_key.strip():
         print(f"  → Utilisation de la clé OpenAI depuis config.json (modèle: {openai_model})")
         return True, 'openai', openai_key, openai_model
     else:
-        api_key = input("Clé API OpenAI (ou Entrée pour Google): ").strip() or None
+        print("  ⚠️  Aucune clé OpenAI trouvée dans config.json")
+        api_key = input("Clé API OpenAI (ou Entrée pour Google): ").strip()
         if api_key:
             model = input("Modèle (gpt-3.5-turbo/gpt-4) [gpt-3.5-turbo]: ").strip() or "gpt-3.5-turbo"
             return True, 'openai', api_key, model
-        return True, 'google', None, None
+        else:
+            print("  → Aucune clé fournie, utilisation de Google Translate")
+            return True, 'google', None, None
 
 
 def _configure_ollama(ollama_model, ollama_base_url):

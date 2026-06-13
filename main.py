@@ -70,11 +70,10 @@ from src.chapter_translator import translate_chapters
 from src.book_generator import create_epub, create_pdf
 
 
-def configure_translation_and_output(config, base_name, start_chapter, end_chapter, output_folder, default_format):
-    """Configure la traduction et le format de sortie"""
+def configure_translation(config):
+    """Configure uniquement le service de traduction (avant téléchargement)"""
     translation_config = config.get('translation', {})
 
-    # Configuration de la traduction
     translate_to_french, service, api_key, region = choose_translation_service(
         translation_config.get('deepl_api_key', ''),
         translation_config.get('microsoft_api_key', ''),
@@ -85,15 +84,10 @@ def configure_translation_and_output(config, base_name, start_chapter, end_chapt
         translation_config.get('ollama_base_url', 'http://localhost:11434')
     )
 
-    # Format de sortie
-    output_file, format_file = choose_output_format_and_name(
-        base_name, start_chapter, end_chapter, output_folder, default_format
-    )
-
-    return translate_to_french, service, api_key, region, output_file, format_file
+    return translate_to_french, service, api_key, region
 
 
-def process_epub_source(input_folder, output_folder, config, retry_config):
+def process_epub_source(input_folder, output_folder, translate_to_french, service, api_key, region):
     """Traite une source EPUB locale"""
     epub_files = list_epub_files(input_folder)
 
@@ -122,25 +116,29 @@ def process_epub_source(input_folder, output_folder, config, retry_config):
         chapters = chapters[start_idx:end_idx + 1]
         print(f"✓ {len(chapters)} chapitre(s) sélectionné(s)")
 
-    # Configuration commune de la traduction et de la sortie
+    # Configuration du format de sortie
     epub_basename = os.path.splitext(os.path.basename(epub_path))[0]
-    translate_to_french, service, api_key, region, output_file, format_file = configure_translation_and_output(
-        config, epub_basename, start_chapter_num, end_chapter_num, output_folder, 'pdf'
+    output_file, format_file = choose_output_format_and_name(
+        epub_basename, start_chapter_num, end_chapter_num, output_folder, 'pdf'
     )
 
-    return chapters, metadata, translate_to_french, service, api_key, region, output_file, format_file
+    return chapters, metadata, output_file, format_file
 
 
-def process_web_source(output_folder, config, retry_config):
+def process_web_source(output_folder, translate_to_french, service, api_key, region):
     """Traite une source web"""
     # Récupérer les informations de téléchargement
     novel_name, base_url, start_chapter, end_chapter = get_web_download_info()
+
+    # Configuration du format de sortie AVANT téléchargement
+    output_file, format_file = choose_output_format_and_name(
+        novel_name, start_chapter, end_chapter, output_folder, 'epub'
+    )
 
     # Télécharger les chapitres
     chapters = download_chapters(start_chapter, end_chapter, base_url)
 
     # Créer les métadonnées basées sur le nom du roman
-    # Convertir le nom de format URL en titre lisible (ex: "the-primal-hunter" -> "The Primal Hunter")
     title = ' '.join(word.capitalize() for word in novel_name.replace('-', ' ').replace('_', ' ').split())
     metadata = {
         'title': title,
@@ -148,12 +146,7 @@ def process_web_source(output_folder, config, retry_config):
         'language': 'en'
     }
 
-    # Configuration commune de la traduction et de la sortie
-    translate_to_french, service, api_key, region, output_file, format_file = configure_translation_and_output(
-        config, novel_name, start_chapter, end_chapter, output_folder, 'epub'
-    )
-
-    return chapters, metadata, translate_to_french, service, api_key, region, output_file, format_file
+    return chapters, metadata, output_file, format_file
 
 
 def main():
@@ -183,13 +176,16 @@ def main():
     # Choisir la source
     source_choice = choose_source()
 
+    # Configuration de la traduction (AVANT téléchargement)
+    translate_to_french, service, api_key, region = configure_translation(config)
+
     # Traiter selon la source choisie
     if source_choice == "2":
-        chapters, metadata, translate_to_french, service, api_key, region, output_file, format_file = \
-            process_epub_source(input_folder, output_folder, config, retry_config)
+        chapters, metadata, output_file, format_file = \
+            process_epub_source(input_folder, output_folder, translate_to_french, service, api_key, region)
     else:
-        chapters, metadata, translate_to_french, service, api_key, region, output_file, format_file = \
-            process_web_source(output_folder, config, retry_config)
+        chapters, metadata, output_file, format_file = \
+            process_web_source(output_folder, translate_to_french, service, api_key, region)
 
     # Vérifier le format de sortie
     if not output_file.endswith(('.epub', '.pdf')):
