@@ -48,7 +48,7 @@ class GeminiTranslator:
     def __init__(
             self,
             api_key: str,
-            model_name: str = "gemini-1.5-flash",
+            model_name: str = "gemini-3.5-flash-lite",
             max_attempts: int = 3,
             wait_multiplier: float = 2.0,
     ):
@@ -194,7 +194,7 @@ def translate_text(
         if not final_key:
             raise ValueError("Aucune clé d'API Gemini valide n'a été trouvée dans la configuration.")
 
-        model_name = kwargs.get("model") or region or (config.get("translation", {}).get("gemini_model") if config else "gemini-1.5-flash")
+        model_name = kwargs.get("model") or region or (config.get("translation", {}).get("gemini_model") if config else "gemini-3.5-flash-lite")
         max_attempts = retry_config.get("max_attempts", 3)
         wait_multiplier = retry_config.get("wait_multiplier", 2.0)
 

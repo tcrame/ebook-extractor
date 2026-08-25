@@ -76,7 +76,7 @@ def configure_translation(config):
 
     translate_to_french, service, api_key, region = choose_translation_service(
         gemini_key=translation_config.get('gemini_api_key', ''),
-        gemini_model=translation_config.get('gemini_model', 'gemini-1.5-flash'),
+        gemini_model=translation_config.get('gemini_model', 'gemini-3.5-flash-lite'),
         deepl_key=translation_config.get('deepl_api_key', ''),
         microsoft_key=translation_config.get('microsoft_api_key', ''),
         microsoft_region=translation_config.get('microsoft_region', 'northeurope'),
@@ -166,7 +166,8 @@ def main():
         'max_attempts': 3,
         'wait_multiplier': 2,
         'paragraph_delay': 0.3,
-        'batch_delay': 0.5
+        'batch_delay': 0.5,
+        'chapter_delay': 4.0
     })
 
     # Configurer les dossiers

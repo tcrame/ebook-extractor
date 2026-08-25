@@ -14,7 +14,7 @@ def display_config_info(config, input_folder, output_folder, retry_config):
     """Affiche les informations de configuration"""
     translation_config = config.get('translation', {})
     gemini_key = translation_config.get('gemini_api_key', '')
-    gemini_model = translation_config.get('gemini_model', 'gemini-1.5-flash')
+    gemini_model = translation_config.get('gemini_model', 'gemini-3.5-flash-lite')
     deepl_key = translation_config.get('deepl_api_key', '')
     microsoft_key = translation_config.get('microsoft_api_key', '')
     microsoft_region = translation_config.get('microsoft_region', 'northeurope')
@@ -29,7 +29,8 @@ def display_config_info(config, input_folder, output_folder, retry_config):
             print(f"  • Clé Microsoft trouvée (région: {microsoft_region})")
         print(f"  • Retry: {retry_config.get('max_attempts', 3)} tentatives, "
               f"délai x{retry_config.get('wait_multiplier', 2)}, "
-              f"pause paragraphe: {retry_config.get('paragraph_delay', 0.3)}s")
+              f"pause paragraphe: {retry_config.get('paragraph_delay', 0.3)}s, "
+              f"pause chapitre: {retry_config.get('chapter_delay', 4.0)}s")
         print(f"  • Dossier d'entrée: {input_folder}")
         print(f"  • Dossier de sortie: {output_folder}")
         print()
@@ -125,7 +126,7 @@ def choose_translation_service(
 
 def _configure_gemini(gemini_key, gemini_model):
     """Configure le service Gemini"""
-    model = gemini_model or "gemini-1.5-flash"
+    model = gemini_model or "gemini-3.5-flash-lite"
     if gemini_key and gemini_key.strip():
         print(f"  → Utilisation de la clé Gemini depuis config.json (modèle: {model})")
         return True, 'gemini', gemini_key, model

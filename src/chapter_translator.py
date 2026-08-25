@@ -55,8 +55,9 @@ def _translate_single_chapter(title, content, service, api_key, region, retry_co
         h1 = tsoup.find('h1')
         translated_title = h1.get_text(strip=True) if h1 else title
 
-        # Pause de régulation de 4 secondes pour rester sous la limite des 15 RPM
-        time.sleep(4)
+        # Pause de régulation configurable (par défaut 4.0s pour 15 RPM, ou 12.0s pour 5 RPM)
+        chapter_delay = retry_config.get('chapter_delay', 4.0) if retry_config else 4.0
+        time.sleep(chapter_delay)
 
         return (translated_title, translated_html)
 

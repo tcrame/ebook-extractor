@@ -2,7 +2,7 @@
   "translation": {
     "gemini_api_key": "",
     "gemini_model": "gemini-3.5-flash-lite",
-    "deepl_api_key": ",
+    "deepl_api_key": "",
     "microsoft_api_key": "",
     "microsoft_region": "northeurope",
     "openai_api_key": "",
@@ -13,7 +13,8 @@
       "max_attempts": 5,
       "wait_multiplier": 2,
       "paragraph_delay": 0.3,
-      "batch_delay": 0.5
+      "batch_delay": 0.5,
+      "chapter_delay": 4.0
     }
   },
   "paths": {
