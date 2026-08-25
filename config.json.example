@@ -1,14 +1,16 @@
 {
   "translation": {
-    "deepl_api_key": "",
+    "gemini_api_key": "",
+    "gemini_model": "gemini-3.5-flash-lite",
+    "deepl_api_key": ",
     "microsoft_api_key": "",
     "microsoft_region": "northeurope",
     "openai_api_key": "",
     "openai_model": "gpt-3.5-turbo",
-    "ollama_model": "llama3",
+    "ollama_model": "qwen3.5:9b",
     "ollama_base_url": "http://localhost:11434",
     "retry": {
-      "max_attempts": 3,
+      "max_attempts": 5,
       "wait_multiplier": 2,
       "paragraph_delay": 0.3,
       "batch_delay": 0.5
