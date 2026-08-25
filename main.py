@@ -75,13 +75,15 @@ def configure_translation(config):
     translation_config = config.get('translation', {})
 
     translate_to_french, service, api_key, region = choose_translation_service(
-        translation_config.get('deepl_api_key', ''),
-        translation_config.get('microsoft_api_key', ''),
-        translation_config.get('microsoft_region', 'northeurope'),
-        translation_config.get('openai_api_key', ''),
-        translation_config.get('openai_model', 'gpt-3.5-turbo'),
-        translation_config.get('ollama_model', 'llama3'),
-        translation_config.get('ollama_base_url', 'http://localhost:11434')
+        gemini_key=translation_config.get('gemini_api_key', ''),
+        gemini_model=translation_config.get('gemini_model', 'gemini-1.5-flash'),
+        deepl_key=translation_config.get('deepl_api_key', ''),
+        microsoft_key=translation_config.get('microsoft_api_key', ''),
+        microsoft_region=translation_config.get('microsoft_region', 'northeurope'),
+        openai_key=translation_config.get('openai_api_key', ''),
+        openai_model=translation_config.get('openai_model', 'gpt-3.5-turbo'),
+        ollama_model=translation_config.get('ollama_model', 'llama3'),
+        ollama_base_url=translation_config.get('ollama_base_url', 'http://localhost:11434')
     )
 
     return translate_to_french, service, api_key, region
@@ -136,13 +138,13 @@ def process_web_source(output_folder, translate_to_french, service, api_key, reg
     )
 
     # Télécharger les chapitres
-    chapters = download_chapters(start_chapter, end_chapter, base_url)
+    chapters, detected_author = download_chapters(start_chapter, end_chapter, base_url)
 
-    # Créer les métadonnées basées sur le nom du roman
+    # Créer les métadonnées basées sur le nom du roman et l'auteur détecté
     title = ' '.join(word.capitalize() for word in novel_name.replace('-', ' ').replace('_', ' ').split())
     metadata = {
         'title': title,
-        'author': 'Unknown Author',
+        'author': detected_author or 'Unknown Author',
         'language': 'en'
     }
 

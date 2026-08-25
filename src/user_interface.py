@@ -13,12 +13,16 @@ def display_welcome():
 def display_config_info(config, input_folder, output_folder, retry_config):
     """Affiche les informations de configuration"""
     translation_config = config.get('translation', {})
+    gemini_key = translation_config.get('gemini_api_key', '')
+    gemini_model = translation_config.get('gemini_model', 'gemini-1.5-flash')
     deepl_key = translation_config.get('deepl_api_key', '')
     microsoft_key = translation_config.get('microsoft_api_key', '')
     microsoft_region = translation_config.get('microsoft_region', 'northeurope')
 
-    if deepl_key or microsoft_key:
+    if gemini_key or deepl_key or microsoft_key:
         print("✓ Configuration chargée depuis config.json")
+        if gemini_key:
+            print(f"  • Clé Gemini trouvée (modèle: {gemini_model})")
         if deepl_key:
             print("  • Clé DeepL trouvée")
         if microsoft_key:
@@ -79,7 +83,17 @@ def select_chapter_range(total_chapters):
     return 1, total_chapters
 
 
-def choose_translation_service(deepl_key, microsoft_key, microsoft_region, openai_key=None, openai_model=None, ollama_model=None, ollama_base_url=None):
+def choose_translation_service(
+        gemini_key=None,
+        gemini_model=None,
+        deepl_key=None,
+        microsoft_key=None,
+        microsoft_region=None,
+        openai_key=None,
+        openai_model=None,
+        ollama_model=None,
+        ollama_base_url=None
+):
     """Permet de choisir le service de traduction"""
     translate_choice = input("\nTraduire en français ? (o/n) [n]: ") or "n"
 
@@ -87,34 +101,52 @@ def choose_translation_service(deepl_key, microsoft_key, microsoft_region, opena
         return False, 'google', None, None
 
     print("\nService de traduction:")
-    print("  1. Google Translate (gratuit, illimité)")
-    print("  2. DeepL (meilleure qualité, nécessite clé API)")
-    print("  3. Microsoft Translator (nécessite clé API)")
-    print("  4. OpenAI GPT (excellente qualité, nécessite clé API)")
-    print("  5. Ollama (local, gratuit, nécessite Ollama installé)")
-    service_choice = input("\nChoisissez un service (1/2/3/4/5) [1]: ") or "1"
+    print("  1. Google Gemini (Recommandé - rapide & excellente qualité)")
+    print("  2. Google Translate (gratuit, illimité)")
+    print("  3. DeepL (meilleure qualité, nécessite clé API)")
+    print("  4. Microsoft Translator (nécessite clé API)")
+    print("  5. OpenAI GPT (excellente qualité, nécessite clé API)")
+    print("  6. Ollama (local, gratuit, nécessite Ollama installé)")
+    service_choice = input("\nChoisissez un service (1/2/3/4/5/6) [1]: ") or "1"
 
-    if service_choice == "2":
-        return _configure_deepl(deepl_key)
+    if service_choice == "1":
+        return _configure_gemini(gemini_key, gemini_model)
     elif service_choice == "3":
-        return _configure_microsoft(microsoft_key, microsoft_region)
+        return _configure_deepl(deepl_key)
     elif service_choice == "4":
-        return _configure_openai(openai_key, openai_model)
+        return _configure_microsoft(microsoft_key, microsoft_region)
     elif service_choice == "5":
+        return _configure_openai(openai_key, openai_model)
+    elif service_choice == "6":
         return _configure_ollama(ollama_model, ollama_base_url)
     else:
         return True, 'google', None, None
 
 
+def _configure_gemini(gemini_key, gemini_model):
+    """Configure le service Gemini"""
+    model = gemini_model or "gemini-1.5-flash"
+    if gemini_key and gemini_key.strip():
+        print(f"  → Utilisation de la clé Gemini depuis config.json (modèle: {model})")
+        return True, 'gemini', gemini_key, model
+    else:
+        print("  ⚠️  Aucune clé Gemini trouvée dans config.json")
+        api_key = input("Clé API Gemini (ou Entrée pour Google Translate): ").strip()
+        if api_key:
+            return True, 'gemini', api_key, model
+        else:
+            print("  → Aucune clé fournie, utilisation de Google Translate")
+            return True, 'google', None, None
+
+
 def _configure_deepl(deepl_key):
     """Configure le service DeepL"""
-    # Vérifier si la clé existe et n'est pas vide
     if deepl_key and deepl_key.strip():
         print("  → Utilisation de la clé DeepL depuis config.json")
         return True, 'deepl', deepl_key, None
     else:
         print("  ⚠️  Aucune clé DeepL trouvée dans config.json")
-        api_key = input("Clé API DeepL (ou Entrée pour Google): ").strip()
+        api_key = input("Clé API DeepL (ou Entrée pour Google Translate): ").strip()
         if api_key:
             return True, 'deepl', api_key, None
         else:
@@ -124,13 +156,12 @@ def _configure_deepl(deepl_key):
 
 def _configure_microsoft(microsoft_key, microsoft_region):
     """Configure le service Microsoft"""
-    # Vérifier si la clé existe et n'est pas vide
     if microsoft_key and microsoft_key.strip():
         print(f"  → Utilisation de la clé Microsoft depuis config.json (région: {microsoft_region})")
         return True, 'microsoft', microsoft_key, microsoft_region
     else:
         print("  ⚠️  Aucune clé Microsoft trouvée dans config.json")
-        api_key = input("Clé API Microsoft (ou Entrée pour Google): ").strip()
+        api_key = input("Clé API Microsoft (ou Entrée pour Google Translate): ").strip()
         if api_key:
             region = input("Région Azure (ex: northeurope) [northeurope]: ").strip() or "northeurope"
             return True, 'microsoft', api_key, region
@@ -141,13 +172,12 @@ def _configure_microsoft(microsoft_key, microsoft_region):
 
 def _configure_openai(openai_key, openai_model):
     """Configure le service OpenAI"""
-    # Vérifier si la clé existe et n'est pas vide
     if openai_key and openai_key.strip():
         print(f"  → Utilisation de la clé OpenAI depuis config.json (modèle: {openai_model})")
         return True, 'openai', openai_key, openai_model
     else:
         print("  ⚠️  Aucune clé OpenAI trouvée dans config.json")
-        api_key = input("Clé API OpenAI (ou Entrée pour Google): ").strip()
+        api_key = input("Clé API OpenAI (ou Entrée pour Google Translate): ").strip()
         if api_key:
             model = input("Modèle (gpt-3.5-turbo/gpt-4) [gpt-3.5-turbo]: ").strip() or "gpt-3.5-turbo"
             return True, 'openai', api_key, model
@@ -158,11 +188,10 @@ def _configure_openai(openai_key, openai_model):
 
 def _configure_ollama(ollama_model, ollama_base_url):
     """Configure le service Ollama (local)"""
-    print(f"  → Configuration Ollama")
+    print("  → Configuration Ollama")
     model = input(f"Modèle Ollama (ex: llama3, mistral) [{ollama_model}]: ").strip() or ollama_model
     base_url = input(f"URL Ollama [{ollama_base_url}]: ").strip() or ollama_base_url
 
-    # Retourner un dict avec la config Ollama
     ollama_config = {
         'model': model,
         'base_url': base_url
@@ -177,7 +206,6 @@ def choose_output_format_and_name(base_name, start_chapter, end_chapter, output_
     default_output_name = f"{base_name}_{start_chapter}-{end_chapter}.{format_file}"
     output_name = input(f"Nom du fichier de sortie [{default_output_name}]: ") or default_output_name
 
-    # Si l'utilisateur a juste donné un nom, l'ajouter au dossier de sortie
     if not os.path.dirname(output_name):
         output_file = os.path.join(output_folder, output_name)
     else:
@@ -197,4 +225,3 @@ def get_web_download_info():
     except ValueError:
         print("Erreur: Veuillez entrer des numéros valides")
         sys.exit(1)
-

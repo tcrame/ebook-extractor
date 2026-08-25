@@ -47,13 +47,28 @@ def extract_chapters_from_epub(epub_path):
 
 def _extract_metadata(book, epub_path):
     """Extrait les métadonnées du livre EPUB"""
+    # Titre
+    title_meta = book.get_metadata('DC', 'title')
+    title = title_meta[0][0] if title_meta and title_meta[0] else os.path.splitext(os.path.basename(epub_path))[0]
+
+    # Auteur : chercher creator ou contributor, avec gestion des formats chaîne ou tuple/dict
+    author = 'Unknown Author'
+    creator_meta = book.get_metadata('DC', 'creator') or book.get_metadata('DC', 'contributor')
+    if creator_meta and creator_meta[0]:
+        val = creator_meta[0][0]
+        if isinstance(val, str) and val.strip():
+            author = val.strip()
+        elif isinstance(val, (tuple, list)) and len(val) > 0 and val[0]:
+            author = str(val[0]).strip()
+
+    # Langue
+    lang_meta = book.get_metadata('DC', 'language')
+    language = lang_meta[0][0] if lang_meta and lang_meta[0] else 'en'
+
     return {
-        'title': book.get_metadata('DC', 'title')[0][0] if book.get_metadata('DC', 'title')
-                else os.path.splitext(os.path.basename(epub_path))[0],
-        'author': book.get_metadata('DC', 'creator')[0][0] if book.get_metadata('DC', 'creator')
-                 else 'Unknown',
-        'language': book.get_metadata('DC', 'language')[0][0] if book.get_metadata('DC', 'language')
-                   else 'en'
+        'title': title,
+        'author': author,
+        'language': language
     }
 
 
