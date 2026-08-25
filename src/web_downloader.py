@@ -2,8 +2,8 @@
 Module de téléchargement de chapitres depuis le web
 """
 import time
-import requests
 from bs4 import BeautifulSoup
+from curl_cffi import requests
 
 
 def fetch_chapter(chapter_number, base_url):
@@ -21,10 +21,9 @@ def fetch_chapter(chapter_number, base_url):
 
     try:
         print(f"Téléchargement du chapitre {chapter_number}...")
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-        response = requests.get(url, headers=headers, timeout=10)
+
+        # Empreinte Chrome pour contourner le blocage 403
+        response = requests.get(url, impersonate="chrome", timeout=15)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -41,7 +40,7 @@ def fetch_chapter(chapter_number, base_url):
         print(f"  ✓ Chapitre {chapter_number} téléchargé: {title}")
         return title, content_html
 
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         print(f"  ✗ Erreur lors du téléchargement du chapitre {chapter_number}: {e}")
         return None, None
 
@@ -100,12 +99,11 @@ def download_chapters(start_chapter, end_chapter, base_url):
             chapters.append((title, content))
         else:
             # Demander si on continue en cas d'erreur
-            response = input(f"\nChapitre {chapter_num} non disponible. Continuer? (o/n): ")
-            if response.lower() != 'o':
+            resp = input(f"\nChapitre {chapter_num} non disponible. Continuer? (o/n): ")
+            if resp.lower() != 'o':
                 break
 
-        # Pause entre les requêtes pour ne pas surcharger le serveur
-        time.sleep(1)
+        # Pause de 2 secondes pour éviter d'être banni par le serveur
+        time.sleep(2)
 
     return chapters
-
